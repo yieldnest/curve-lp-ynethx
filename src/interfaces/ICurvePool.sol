@@ -7,4 +7,8 @@ interface ICurvePool {
     function get_balances() external view returns (uint256[2] memory);
     function balanceOf(address _account) external view returns (uint256);
     function totalSupply() external view returns (uint256);
+    function coins(uint256 i) external view returns (address);
+    function remove_liquidity(uint256 _amount, uint256[2] memory min_amounts, address receiver) external returns (uint256[2] memory);
+    function get_virtual_price() external view returns (uint256);
+    function name() external view returns (string memory);
 }
