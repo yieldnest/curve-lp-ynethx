@@ -7,20 +7,20 @@ import {BaseOracle, IChainlinkOracle} from "./BaseOracle.sol";
 
 contract YvCurveLpOracle is BaseOracle {
 
-    string private _DESCRIPTION;
+    string private _description;
 
     IERC4626 public immutable YEARN_VAULT;
 
-    IChainlinkOracle public immutable PESSIMISTIC_PRICE_ORACLE;
+    IChainlinkOracle public immutable LP_PRICE_ORACLE;
 
-    constructor(address _yv, address _ppo) {
-        YEARN_VAULT = IERC4626(_yv);
-        PESSIMISTIC_PRICE_ORACLE = IChainlinkOracle(_ppo);
-        _DESCRIPTION = string(abi.encodePacked(YEARN_VAULT.name(), " / ETH"));
+    constructor(address yv, address oracle) {
+        YEARN_VAULT = IERC4626(yv);
+        LP_PRICE_ORACLE = IChainlinkOracle(oracle);
+        _description = string(abi.encodePacked(YEARN_VAULT.name(), " / ETH"));
     }
 
     function description() external view returns (string memory) {
-        return _DESCRIPTION;
+        return _description;
     }
 
     function latestRoundData()
@@ -35,7 +35,7 @@ contract YvCurveLpOracle is BaseOracle {
             uint256 startedAt,
             uint256 updatedAt,
             uint80 answeredInRound
-        ) = PESSIMISTIC_PRICE_ORACLE.latestRoundData();
+        ) = LP_PRICE_ORACLE.latestRoundData();
 
         uint256 assetForShare = YEARN_VAULT.convertToAssets(WAD);
 

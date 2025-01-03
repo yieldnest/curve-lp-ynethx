@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.18;
 
-import {AccessControlUpgradeable} from "@openzeppelin-upgradeable/contracts/access/AccessControlUpgradeable.sol";
+// import {AccessControlUpgradeable} from "@openzeppelin-upgradeable/contracts/access/AccessControlUpgradeable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -11,7 +12,7 @@ import {IStrategyInterface} from "./interfaces/IStrategyInterface.sol";
 
 // @todo -- docs
 // @todo -- constructor sanity checks 
-contract Connector is AccessControlUpgradeable {
+contract Connector is AccessControl {
     using SafeERC20 for IERC20;
 
     uint256 public immutable INDEX_ASSET_A;
@@ -29,7 +30,7 @@ contract Connector is AccessControlUpgradeable {
     bytes32 public constant VAULT_ROLE = keccak256("VAULT");
 
     constructor(address _vault, address _oracle, address _strategy, address _assetA, address _assetB) {
-        _disableInitializers();
+        // _disableInitializers();
 
         VAULT = _vault;
         ORACLE = IChainlinkOracle(_oracle);
@@ -38,6 +39,7 @@ contract Connector is AccessControlUpgradeable {
         ASSET_B = IERC20(_assetB);
         LP = ICurvePool(STRATEGY.asset());
 
+        require(LP.coins(0) == address(0x09db87A538BD693E9d08544577d5cCfAA6373A48), "asd");
         if (LP.coins(0) == _assetA) {
             INDEX_ASSET_A = 0;
             INDEX_ASSET_B = 1;
@@ -47,8 +49,9 @@ contract Connector is AccessControlUpgradeable {
         }
     }
 
-    function initialize(address admin) public initializer {
-        __AccessControl_init();
+    // function initialize(address admin) public initializer {
+    function initialize(address admin) public {
+        // __AccessControl_init();
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(VAULT_ROLE, VAULT);

@@ -7,7 +7,7 @@ import {BaseOracle, IChainlinkOracle} from "./BaseOracle.sol";
 
 contract CurveLpPpo is BaseOracle {
 
-    string private _DESCRIPTION;
+    string private _description;
 
     ICurvePool public immutable LP;
     IChainlinkOracle public immutable COIN1_ORACLE;
@@ -17,11 +17,11 @@ contract CurveLpPpo is BaseOracle {
         LP = ICurvePool(_curvePool);
         COIN1_ORACLE = IChainlinkOracle(_coin1Oracle);
         COIN2_ORACLE = IChainlinkOracle(_coin2Oracle);
-        _DESCRIPTION = string(abi.encodePacked(LP.name(), " / ETH"));
+        _description = string(abi.encodePacked(LP.name(), " / ETH"));
     }
 
     function description() external view override returns (string memory) {
-        return _DESCRIPTION;
+        return _description;
     }
 
     function latestRoundData()
@@ -46,6 +46,7 @@ contract CurveLpPpo is BaseOracle {
             uint80 answeredInRoundCoin2
         ) = COIN2_ORACLE.latestRoundData();
 
+        // @notice -- this is the way for stableswap pools (using `get_virtual_price()`)
         int256 minLpEthPrice = ethPriceCoin1 < ethPriceCoin2 ?
             (ethPriceCoin1 * int256(LP.get_virtual_price())) / int256(10 ** decimals()) :
             (ethPriceCoin2 * int256(LP.get_virtual_price())) / int256(10 ** decimals());

@@ -7,7 +7,7 @@ import {BaseOracle} from "./BaseOracle.sol";
 
 contract YnEthOracle is BaseOracle {
 
-    IERC4626 constant public YNETH = IERC4626(0x09db87A538BD693E9d08544577d5cCfAA6373A48);
+    // IERC4626 constant public YNETH = IERC4626(0x09db87A538BD693E9d08544577d5cCfAA6373A48);
 
     function description() external pure override returns (string memory) {
         return "ynETH backing value (NOT market price) - ynETH / ETH";
@@ -19,6 +19,7 @@ contract YnEthOracle is BaseOracle {
         override
         returns (uint80, int256, uint256, uint256, uint80)
     {
-        return (0, int256(YNETH.convertToAssets(WAD)), 0, block.timestamp, 0);
+        // return (0, int256(YNETH.convertToAssets(WAD)), 0, block.timestamp, 0);
+        return (0, int256(WAD), 0, block.timestamp, 0);
     }
 }

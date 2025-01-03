@@ -82,14 +82,14 @@ contract Setup is ExtendedTest, IEvents {
         _setTokenAddrs();
 
         // Set asset
-        asset = ERC20(tokenAddrs["MIM-3Crv"]);
+        asset = ERC20(tokenAddrs["ynETH/wstETH"]);
 
         // Set decimals
         decimals = asset.decimals();
 
         // setup vars for strategy
         booster = IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31); // convex mainnet booster: 0xF403C135812408BFbE8713b5A23a04b3D48AAE31
-        pid = 40; // convex mainnet tricrypto: 188, MIM: 40
+        pid = 381; // convex mainnet tricrypto: 188, MIM: 40, yneth: 381
         name = "StrategyConvexMIM";
 
         // Deploy strategy and set variables
@@ -202,5 +202,6 @@ contract Setup is ExtendedTest, IEvents {
         tokenAddrs["USDC"] = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
         tokenAddrs["3CryptoUSDT"] = 0xf5f5B97624542D72A9E06f04804Bf81baA15e2B4;
         tokenAddrs["MIM-3Crv"] = 0x5a6A4D54456819380173272A5E8E9B9904BdF41B;
+        tokenAddrs["ynETH/wstETH"] = 0x19B8524665aBAC613D82eCE5D8347BA44C714bDd;
     }
 }
