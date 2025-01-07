@@ -72,7 +72,7 @@ contract Connector is AccessControl {
         if (_amountA > 0) ASSET_A.safeTransferFrom(msg.sender, address(this), _amountA);
         if (_amountB > 0) ASSET_B.safeTransferFrom(msg.sender, address(this), _amountB);
 
-        uint256[2] memory _amounts;
+        uint256[] memory _amounts = new uint256[](2);
         _amounts[INDEX_ASSET_A] = _amountA;
         _amounts[INDEX_ASSET_B] = _amountB;
         LP.add_liquidity(_amounts, _minOut);

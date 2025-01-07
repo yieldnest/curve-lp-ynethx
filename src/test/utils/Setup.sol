@@ -7,6 +7,8 @@ import {ExtendedTest} from "./ExtendedTest.sol";
 import {StrategyConvexStaker, ERC20} from "src/StrategyConvexStaker.sol";
 import {IStrategyInterface} from "src/interfaces/IStrategyInterface.sol";
 import {IConvexBooster} from "src/interfaces/ConvexInterfaces.sol";
+import {ICurvePool} from "../../interfaces/ICurvePool.sol";
+import {ICurveStableswapNGFactory} from "../../interfaces/ICurveStableswapNGFactory.sol";
 
 // Inherit the events so they can be checked if desired.
 import {IEvents} from "@tokenized-strategy/interfaces/IEvents.sol";
@@ -40,6 +42,7 @@ contract Setup is ExtendedTest, IEvents {
     // Contract instances that we will use repeatedly.
     ERC20 public asset;
     IStrategyInterface public strategy;
+    ICurvePool public curveStableswapPool;
 
     // to use when deploying strategy
     IConvexBooster public booster; // specific to each chain
@@ -68,6 +71,15 @@ contract Setup is ExtendedTest, IEvents {
     // Default profit max unlock time is set for 10 days
     uint256 public profitMaxUnlockTime = 10 days;
 
+    address public constant YNETH = 0x09db87A538BD693E9d08544577d5cCfAA6373A48;
+    address public constant WSTETH = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
+    address public constant YNLSDE = 0x35Ec69A77B79c255e5d47D5A3BdbEFEfE342630c;
+    address public constant YNLSDE_VIEWER = 0x9B933D84Fac0782F3B275D76B64a0DBf6FBEf28F;
+    address public constant YNETH_VIEWER = 0xF0207Ffa0b793E009DF9Df62fEE95B8FC6c93EcF;
+
+    ICurveStableswapNGFactory public constant FACTORY =
+        ICurveStableswapNGFactory(0x6A8cbed756804B16E05E741eDaBd5cB544AE21bf);
+
     function setUp() public virtual {
         //uint256 mainnetFork = vm.createFork("mainnet");
         //uint256 arbitrumFork = vm.createFork("arbitrum");
@@ -79,10 +91,11 @@ contract Setup is ExtendedTest, IEvents {
         //vm.selectFork(polygonFork);
         //vm.selectFork(optimismFork);
 
+        _deployStableswapPool();
         _setTokenAddrs();
 
         // Set asset
-        asset = ERC20(tokenAddrs["ynETH/wstETH"]);
+        asset = ERC20(tokenAddrs["ynETH/ynLSDe"]);
 
         // Set decimals
         decimals = asset.decimals();
@@ -192,6 +205,53 @@ contract Setup is ExtendedTest, IEvents {
         strategy.setPerformanceFee(_performanceFee);
     }
 
+    function _deployStableswapPool() internal {
+        // // deploy Curve StableswapNG pool
+        address[] memory coins = new address[](2);
+        coins[0] = address(YNETH);
+        coins[1] = address(YNLSDE);
+        uint8[] memory assetTypes = new uint8[](2); // 1: Oracle - token with rate oracle (e.g. wstETH)
+        assetTypes[0] = 1;
+        assetTypes[1] = 1;
+        bytes4[] memory methodIds = new bytes4[](2);
+        methodIds[0] = bytes4(keccak256("getRate()"));
+        methodIds[1] = bytes4(keccak256("getRate()"));
+        address[] memory oracles = new address[](2);
+        oracles[0] = YNETH_VIEWER;
+        oracles[1] = YNLSDE_VIEWER;
+        curveStableswapPool = FACTORY.deploy_plain_pool(
+            "ynMAXI", // name
+            "ynMAXI", // symbol
+            coins,
+            200, // A
+            1000000, // fee
+            20000000000, // _offpeg_fee_multiplier
+            866, // _ma_exp_time
+            0, // implementation id
+            assetTypes,
+            methodIds,
+            oracles
+        );
+
+        _addLiquidity();
+    }
+
+    function _addLiquidity() internal {
+        uint256 amount = 1 ether;
+        address user = address(0x123);
+        airdrop(ERC20(YNETH), user, amount);
+        airdrop(ERC20(YNLSDE), user, amount);
+
+        vm.startPrank(user);
+        ERC20(YNETH).approve(address(curveStableswapPool), amount);
+        ERC20(YNLSDE).approve(address(curveStableswapPool), amount);
+        uint256[] memory amounts = new uint256[](2);
+        amounts[0] = amount;
+        amounts[1] = amount;
+        curveStableswapPool.add_liquidity(amounts, 0);
+        vm.stopPrank();
+    }
+
     function _setTokenAddrs() internal {
         tokenAddrs["WBTC"] = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
         tokenAddrs["YFI"] = 0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e;
@@ -203,5 +263,6 @@ contract Setup is ExtendedTest, IEvents {
         tokenAddrs["3CryptoUSDT"] = 0xf5f5B97624542D72A9E06f04804Bf81baA15e2B4;
         tokenAddrs["MIM-3Crv"] = 0x5a6A4D54456819380173272A5E8E9B9904BdF41B;
         tokenAddrs["ynETH/wstETH"] = 0x19B8524665aBAC613D82eCE5D8347BA44C714bDd;
+        tokenAddrs["ynETH/ynLSDe"] = address(curveStableswapPool);
     }
 }

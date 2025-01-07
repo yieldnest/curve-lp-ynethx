@@ -40,19 +40,19 @@ contract StrategyConvexStaker is
         // pid is specific to each pool
         pid = _pid;
 
-        // use our pid to pull the corresponding rewards contract and LP token
-        (address lptoken, , , address _rewardsContract, , ) = booster.poolInfo(
-            _pid
-        );
-        rewardsContract = IConvexRewards(_rewardsContract);
+        // // use our pid to pull the corresponding rewards contract and LP token
+        // (address lptoken, , , address _rewardsContract, , ) = booster.poolInfo(
+        //     _pid
+        // );
+        // rewardsContract = IConvexRewards(_rewardsContract);
 
-        // make sure we used the correct pid for our asset
-        if (address(lptoken) != _asset) {
-            revert();
-        }
+        // // make sure we used the correct pid for our asset
+        // if (address(lptoken) != _asset) {
+        //     revert();
+        // }
 
-        // approve LP deposits on the booster
-        ERC20(_asset).forceApprove(_booster, type(uint256).max);
+        // // approve LP deposits on the booster
+        // ERC20(_asset).forceApprove(_booster, type(uint256).max);
     }
 
     /// @notice Balance of loose want in the strategy.
@@ -78,7 +78,7 @@ contract StrategyConvexStaker is
      */
     function _deployFunds(uint256 _amount) internal override {
         // the final true argument means we deposit + stake at the same time
-        booster.deposit(pid, _amount, true);
+        // booster.deposit(pid, _amount, true);
     }
 
     /**
@@ -103,7 +103,7 @@ contract StrategyConvexStaker is
      * @param _amount, The amount of 'asset' to be freed.
      */
     function _freeFunds(uint256 _amount) internal override {
-        rewardsContract.withdrawAndUnwrap(_amount, false);
+        // rewardsContract.withdrawAndUnwrap(_amount, false);
     }
 
     /**
@@ -133,15 +133,16 @@ contract StrategyConvexStaker is
         override
         returns (uint256 _totalAssets)
     {
-        uint256 _looseAssets = balanceOfWant();
-        if (_looseAssets > 0) {
-            _deployFunds(_looseAssets);
-        }
+        // uint256 _looseAssets = balanceOfWant();
+        // if (_looseAssets > 0) {
+        //     _deployFunds(_looseAssets);
+        // }
 
-        // claim any pending rewards
-        _claimRewards();
+        // // claim any pending rewards
+        // _claimRewards();
 
-        _totalAssets = balanceOfStake();
+        // _totalAssets = balanceOfStake();
+        _totalAssets = balanceOfWant();
     }
 
     /**

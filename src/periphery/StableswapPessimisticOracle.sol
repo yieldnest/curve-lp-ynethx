@@ -5,7 +5,7 @@ import {ICurvePool} from "../interfaces/ICurvePool.sol";
 
 import {BaseOracle, IChainlinkOracle} from "./BaseOracle.sol";
 
-contract CurveLpPpo is BaseOracle {
+contract StableswapPessimisticOracle is BaseOracle {
 
     string private _description;
 
@@ -46,7 +46,6 @@ contract CurveLpPpo is BaseOracle {
             uint80 answeredInRoundCoin2
         ) = COIN2_ORACLE.latestRoundData();
 
-        // @notice -- this is the way for stableswap pools (using `get_virtual_price()`)
         int256 minLpEthPrice = ethPriceCoin1 < ethPriceCoin2 ?
             (ethPriceCoin1 * int256(LP.get_virtual_price())) / int256(10 ** decimals()) :
             (ethPriceCoin2 * int256(LP.get_virtual_price())) / int256(10 ** decimals());
