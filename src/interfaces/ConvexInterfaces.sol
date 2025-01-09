@@ -51,4 +51,7 @@ interface IConvexBooster {
     function poolInfo(
         uint256
     ) external view returns (address, address, address, address, address, bool);
+
+    function addPool(address _lptoken, address _gauge, uint256 _stashVersion) external returns(bool);
+    function poolLength() external view returns (uint256);
 }
