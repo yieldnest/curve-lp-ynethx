@@ -65,8 +65,8 @@ contract Setup is ExtendedTest, IEvents {
     uint256 public MAX_BPS = 10_000;
 
     // Fuzz from $0.01 of 1e6 stable coins up to 1 trillion of a 1e18 coin
-    uint256 public maxFuzzAmount = 1e30;
-    uint256 public minFuzzAmount = 10_000;
+    uint256 public maxFuzzAmount = 100 ether;
+    uint256 public minFuzzAmount = 1_000_000_000;
 
     // Default profit max unlock time is set for 10 days
     uint256 public profitMaxUnlockTime = 10 days;
@@ -244,11 +244,11 @@ contract Setup is ExtendedTest, IEvents {
 
     function _addLiquidity() internal {
         uint256 amount = 1 ether;
-        address user = address(0x123);
-        airdrop(ERC20(YNETH), user, amount);
-        airdrop(ERC20(YNLSDE), user, amount);
+        address seeder = address(0x123);
+        airdrop(ERC20(YNETH), seeder, amount);
+        airdrop(ERC20(YNLSDE), seeder, amount);
 
-        vm.startPrank(user);
+        vm.startPrank(seeder);
         ERC20(YNETH).approve(address(curveStableswapPool), amount);
         ERC20(YNLSDE).approve(address(curveStableswapPool), amount);
         uint256[] memory amounts = new uint256[](2);

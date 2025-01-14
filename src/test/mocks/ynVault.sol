@@ -81,9 +81,10 @@ contract YnVault is ERC4626 {
     }
 
     function totalAssets() public view override returns (uint256) {
+        (int256 _rate,) = connector.rate();
         return
             IERC20(asset()).balanceOf(address(this)) +
-            (strategy.balanceOf(address(this)) * connector.rate() / 1e18) +
+            (strategy.balanceOf(address(this)) * uint256(_rate) / 1e18) +
             YNETH.convertToAssets(YNETH.balanceOf(address(this))) +
             STETH.balanceOf(address(this)) +
             (WSTETH.balanceOf(address(this)) * STETH.getPooledEthByShares(1e18) / 1e18) +

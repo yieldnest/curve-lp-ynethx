@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.18;
 
+import {TransparentUpgradeableProxy} from
+    "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+
 import "forge-std/console2.sol";
 import {Setup} from "./utils/Setup.sol";
 
 import {Connector} from "../Connector.sol";
 
-import {StrategyAprOracle} from "../periphery/StrategyAprOracle.sol";
 import {YvCurveLpOracle} from "../periphery/YvCurveLpOracle.sol";
 import {StableswapOracle} from "../periphery/StableswapOracle.sol";
 
@@ -19,13 +21,23 @@ contract ConnectorTest is Setup {
     StableswapOracle public stableswapOracle;
     YnVault public vault;
 
+    address public constant TIMELOCK_CONTROLLER = 0xbB73f8a5B0074b27c6df026c77fA08B0111D017A;
+
     function setUp() public override {
         super.setUp();
 
         stableswapOracle = new StableswapOracle(address(curveStableswapPool));
         yvCurveLpOracle = new YvCurveLpOracle(address(strategy), address(stableswapOracle));
         vault = new YnVault();
-        connector = new Connector(address(vault), address(yvCurveLpOracle), address(strategy), YNETH, YNLSDE);
+        Connector connectorImpl = new Connector(address(vault), address(yvCurveLpOracle), address(strategy), YNETH, YNLSDE);
+
+        connector = Connector(
+            address(
+                new TransparentUpgradeableProxy(
+                    address(connectorImpl), TIMELOCK_CONTROLLER, ""
+                )
+            )
+        );
 
         vault.setConnector(address(connector));
         vault.setStrategy(address(strategy));
@@ -33,8 +45,8 @@ contract ConnectorTest is Setup {
         connector.initialize(management);
     }
 
-    function testDeposit() public {
-        uint256 amount = 1 ether;
+    function testDeposit(uint256 amount) public {
+        vm.assume(amount > minFuzzAmount && amount < maxFuzzAmount);
 
         airdrop(ERC20(vault.asset()), user, amount);
         vm.startPrank(user);
@@ -82,5 +94,34 @@ contract ConnectorTest is Setup {
         }
 
         assertApproxEqRel(vault.totalAssets(), totalAssetsBefore, 1e11, "testDeposit: E2"); // 0.00001%
+    }
+
+    function testWithdraw(uint256 amount) public {
+        testDeposit(amount);
+
+        uint256 totalAssetsBefore = vault.totalAssets();
+
+        // approve
+        {
+            address[] memory targets = new address[](1);
+            uint256[] memory values = new uint256[](1);
+            bytes[] memory data = new bytes[](1);
+            targets[0] = address(strategy);
+            data[0] = abi.encodeWithSignature("approve(address,uint256)", address(connector), type(uint256).max);
+            vault.processor(targets, values, data);
+        }
+
+        // withdraw
+        {
+            address[] memory targets = new address[](1);
+            uint256[] memory values = new uint256[](1);
+            bytes[] memory data = new bytes[](1);
+            targets[0] = address(connector);
+            uint256 shares = strategy.balanceOf(address(vault));
+            data[0] = abi.encodeWithSignature("withdraw(uint256,uint256,uint256)", shares, 0, 0);
+            vault.processor(targets, values, data);
+        }
+
+        assertApproxEqRel(vault.totalAssets(), totalAssetsBefore, 1e11, "testWithdraw: E0"); // 0.00001%
     }
 }
