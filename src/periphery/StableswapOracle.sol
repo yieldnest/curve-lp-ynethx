@@ -11,15 +11,20 @@ contract StableswapOracle is BaseOracle {
 
     ICurvePool public immutable CURVE_POOL;
 
+    /// @notice Construct the StableswapOracle
+    /// @param _curvePool The Curve pool address
     constructor(address _curvePool) {
         CURVE_POOL = ICurvePool(_curvePool);
         _description = string(abi.encodePacked(CURVE_POOL.name(), " / ETH Backing price. Assumes backing is 1:1 with ETH"));
     }
 
+    /// @notice Returns the description of the oracle
+    /// @return description
     function description() external view override returns (string memory) {
         return _description;
     }
 
+    /// @inheritdoc BaseOracle
     function latestRoundData()
         public
         view

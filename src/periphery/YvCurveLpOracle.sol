@@ -13,16 +13,22 @@ contract YvCurveLpOracle is BaseOracle {
 
     IChainlinkOracle public immutable LP_PRICE_ORACLE;
 
+    /// @notice Construct the YvCurveLpOracle
+    /// @param yv The Yearn vault address
+    /// @param oracle The Yearn vault share (pps) oracle address
     constructor(address yv, address oracle) {
         YEARN_VAULT = IERC4626(yv);
         LP_PRICE_ORACLE = IChainlinkOracle(oracle);
         _description = string(abi.encodePacked(YEARN_VAULT.name(), " / ETH"));
     }
 
+    /// @notice Returns the description of the oracle
+    /// @return description
     function description() external view returns (string memory) {
         return _description;
     }
 
+    /// @inheritdoc BaseOracle
     function latestRoundData()
         public
         view
