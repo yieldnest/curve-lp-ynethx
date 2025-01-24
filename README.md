@@ -1,10 +1,14 @@
-# Tokenized Strategy Mix for Yearn V3 strategies
+# Tokenized Strategy Mix for Yearn V3 strategies AND a Connector for ynETHx 
 
 This repo will allow you to write, test and deploy V3 "Tokenized Strategies" using [Foundry](https://book.getfoundry.sh/).
 
 You will only need to override the three functions in Strategy.sol of `_deployFunds`, `_freeFunds` and `_harvestAndReport`. With the option to also override `_tend`, `_tendTrigger`, `availableDepositLimit`, `availableWithdrawLimit` and `_emergencyWithdraw` if desired.
 
 For a more complete overview of how the Tokenized Strategies work please visit the [TokenizedStrategy Repo](https://github.com/yearn/tokenized-strategy).
+
+### Connector
+
+The `Connector.sol` interfaces between Yieldnest's ynETHx vault and the Yearn strategy. It allows deposits into the Yearn strategy with underlying assets instead of its main asset which is a Curve LP token. Additionally, the `rate()` function returns the price per share (PPS) of the Yearn strategy, denominated in ETH.
 
 ## How to start
 
