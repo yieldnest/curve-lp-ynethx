@@ -93,7 +93,7 @@ contract ConnectorTest is Setup {
             vault.processor(targets, values, data);
         }
 
-        assertApproxEqRel(vault.totalAssets(), totalAssetsBefore, 1e11, "testDeposit: E2"); // 0.00001%
+        assertApproxEqRel(vault.totalAssets(), totalAssetsBefore, 1e14, "testDeposit: E2");
     }
 
     function testWithdraw(uint256 amount) public {
