@@ -83,8 +83,8 @@ contract Connector is AccessControlUpgradeable {
     {
         if (_amountA == 0 && _amountB == 0) revert ZeroAmount();
 
-        if (_amountA > 0) ASSET_A.safeTransferFrom(msg.sender, address(this), _amountA);
-        if (_amountB > 0) ASSET_B.safeTransferFrom(msg.sender, address(this), _amountB);
+        if (_amountA > 0) ASSET_A.safeTransferFrom(VAULT, address(this), _amountA);
+        if (_amountB > 0) ASSET_B.safeTransferFrom(VAULT, address(this), _amountB);
 
         uint256[] memory _amounts = new uint256[](2);
         _amounts[INDEX_ASSET_A] = _amountA;
@@ -94,7 +94,7 @@ contract Connector is AccessControlUpgradeable {
         uint256 _balance = CURVE_POOL.balanceOf(address(this));
         if (_balance == 0) revert ZeroAmount();
 
-        return STRATEGY.deposit(_balance, msg.sender);
+        return STRATEGY.deposit(_balance, VAULT);
     }
 
     /// @notice Withdraw assets from the Strategy
@@ -118,7 +118,7 @@ contract Connector is AccessControlUpgradeable {
         _minAmounts[INDEX_ASSET_A] = _minAmountA;
         _minAmounts[INDEX_ASSET_B] = _minAmountB;
 
-        return CURVE_POOL.remove_liquidity(_balance, _minAmounts, msg.sender);
+        return CURVE_POOL.remove_liquidity(_balance, _minAmounts, VAULT);
     }
 
     /// @notice Sweep any ERC20 token from the contract
