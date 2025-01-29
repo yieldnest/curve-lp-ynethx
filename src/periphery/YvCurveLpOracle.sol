@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.23;
 
-import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
+import {IYearnV2Vault} from "../interfaces/IYearnV2Vault.sol";
 
 import {BaseOracle, IChainlinkOracle} from "./BaseOracle.sol";
 
@@ -9,7 +9,7 @@ contract YvCurveLpOracle is BaseOracle {
 
     string private _description;
 
-    IERC4626 public immutable YEARN_VAULT;
+    IYearnV2Vault public immutable YEARN_VAULT;
 
     IChainlinkOracle public immutable LP_PRICE_ORACLE;
 
@@ -17,7 +17,7 @@ contract YvCurveLpOracle is BaseOracle {
     /// @param yv The Yearn vault address
     /// @param oracle The Yearn vault share (pps) oracle address
     constructor(address yv, address oracle) {
-        YEARN_VAULT = IERC4626(yv);
+        YEARN_VAULT = IYearnV2Vault(yv);
         LP_PRICE_ORACLE = IChainlinkOracle(oracle);
         _description = string(abi.encodePacked(YEARN_VAULT.name(), " / ETH"));
     }
@@ -43,7 +43,7 @@ contract YvCurveLpOracle is BaseOracle {
             uint80 answeredInRound
         ) = LP_PRICE_ORACLE.latestRoundData();
 
-        uint256 assetForShare = YEARN_VAULT.convertToAssets(WAD);
+        uint256 assetForShare = YEARN_VAULT.pricePerShare();
 
         int256 minPrice =
             int256(price * int256(assetForShare)) /

@@ -7,7 +7,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 import {ICurvePool} from "./interfaces/ICurvePool.sol";
 import {IChainlinkOracle} from "./interfaces/IChainlinkOracle.sol";
-import {IStrategyInterface} from "./interfaces/IStrategyInterface.sol";
+import {IYearnV2Vault} from "./interfaces/IYearnV2Vault.sol";
 
 /// @title ynMaxVault <--> Curve LP <--> ERC4626 Strategy Connector
 /// @dev This contract is only suitable for Curve pools with 2 assets
@@ -25,7 +25,7 @@ contract Connector is AccessControlUpgradeable {
 
     ICurvePool public immutable CURVE_POOL;
     IChainlinkOracle public immutable ORACLE;
-    IStrategyInterface public immutable STRATEGY;
+    IYearnV2Vault public immutable STRATEGY;
 
     IERC20 public immutable ASSET_A;
     IERC20 public immutable ASSET_B;
@@ -37,10 +37,10 @@ contract Connector is AccessControlUpgradeable {
 
         VAULT = _vault;
         ORACLE = IChainlinkOracle(_oracle);
-        STRATEGY = IStrategyInterface(_strategy);
+        STRATEGY = IYearnV2Vault(_strategy);
         ASSET_A = IERC20(_assetA);
         ASSET_B = IERC20(_assetB);
-        CURVE_POOL = ICurvePool(STRATEGY.asset());
+        CURVE_POOL = ICurvePool(STRATEGY.token());
 
         if (CURVE_POOL.coins(0) == _assetA) {
             INDEX_ASSET_A = 0;
@@ -109,7 +109,8 @@ contract Connector is AccessControlUpgradeable {
     {
         if (_amount == 0) revert ZeroAmount();
 
-        STRATEGY.redeem(_amount, address(this), VAULT);
+        IERC20(address(STRATEGY)).transferFrom(VAULT, address(this), _amount);
+        STRATEGY.withdraw(_amount, address(this));
 
         uint256 _balance = CURVE_POOL.balanceOf(address(this));
         if (_balance == 0) revert ZeroAmount();

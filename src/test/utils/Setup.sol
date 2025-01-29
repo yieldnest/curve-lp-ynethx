@@ -102,7 +102,7 @@ contract Setup is ExtendedTest, IEvents {
 
         // setup vars for strategy
         booster = IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31); // convex mainnet booster: 0xF403C135812408BFbE8713b5A23a04b3D48AAE31
-        // pid = 381; // convex mainnet tricrypto: 188, MIM: 40, yneth: 381
+        pid = 417; // convex mainnet tricrypto: 188, MIM: 40, yneth: 381
         name = "StrategyConvexMIM";
 
         // Deploy strategy and set variables
@@ -122,10 +122,10 @@ contract Setup is ExtendedTest, IEvents {
 
     function setUpStrategy() public returns (address) {
 
-        pid = IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31).poolLength();
-        address _gauge = 0xc58faAf6eAc90bbCAD725d700efF613116393DE9;
-        vm.prank(0x5F47010F230cE1568BeA53a06eBAF528D05c5c1B);
-        IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31).addPool(address(curveStableswapPool), _gauge, 3);
+        // pid = IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31).poolLength();
+        // address _gauge = 0xc58faAf6eAc90bbCAD725d700efF613116393DE9;
+        // vm.prank(0x5F47010F230cE1568BeA53a06eBAF528D05c5c1B);
+        // IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31).addPool(address(curveStableswapPool), _gauge, 3);
 
         // we save the strategy as a IStrategyInterface to give it the needed interface
         IStrategyInterface _strategy = IStrategyInterface(

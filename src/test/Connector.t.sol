@@ -12,7 +12,11 @@ import {Connector} from "../Connector.sol";
 import {YvCurveLpOracle} from "../periphery/YvCurveLpOracle.sol";
 import {StableswapOracle} from "../periphery/StableswapOracle.sol";
 
-import {YnVault, ERC20} from "./mocks/YnVault.sol";
+import {YnVault, ERC20, IERC20} from "./mocks/YnVault.sol";
+
+interface IYv2Strat is IERC20 {
+    function token() external view returns (address);
+}
 
 contract ConnectorTest is Setup {
 
@@ -23,13 +27,15 @@ contract ConnectorTest is Setup {
 
     address public constant TIMELOCK_CONTROLLER = 0xbB73f8a5B0074b27c6df026c77fA08B0111D017A;
 
+    IYv2Strat public YEARN_V2_STRAT = IYv2Strat(0x823976dA34aC45C23a8DfEa51B3Ff1Ae0D980213);
+
     function setUp() public override {
-        super.setUp();
+        // super.setUp();
 
         stableswapOracle = new StableswapOracle(address(curveStableswapPool));
-        yvCurveLpOracle = new YvCurveLpOracle(address(strategy), address(stableswapOracle));
+        yvCurveLpOracle = new YvCurveLpOracle(address(YEARN_V2_STRAT), address(stableswapOracle));
         vault = new YnVault();
-        Connector connectorImpl = new Connector(address(vault), address(yvCurveLpOracle), address(strategy), YNETH, YNLSDE);
+        Connector connectorImpl = new Connector(address(vault), address(yvCurveLpOracle), address(YEARN_V2_STRAT), YNETH, YNLSDE);
 
         connector = Connector(
             address(
@@ -40,7 +46,7 @@ contract ConnectorTest is Setup {
         );
 
         vault.setConnector(address(connector));
-        vault.setStrategy(address(strategy));
+        vault.setStrategy(address(YEARN_V2_STRAT));
 
         connector.initialize(management);
     }
@@ -56,7 +62,7 @@ contract ConnectorTest is Setup {
 
         uint256 totalAssetsBefore = vault.totalAssets();
 
-        address lp = strategy.asset();
+        address lp = YEARN_V2_STRAT.token();
         uint256 totalTokensInLP = ERC20(YNETH).balanceOf(lp) + ERC20(YNLSDE).balanceOf(lp);
         uint256 ynethRatio = ERC20(YNETH).balanceOf(lp) * 1e18 / totalTokensInLP;
         uint256 ynlsdeRatio = 1e18 - ynethRatio;
@@ -106,7 +112,7 @@ contract ConnectorTest is Setup {
             address[] memory targets = new address[](1);
             uint256[] memory values = new uint256[](1);
             bytes[] memory data = new bytes[](1);
-            targets[0] = address(strategy);
+            targets[0] = address(YEARN_V2_STRAT);
             data[0] = abi.encodeWithSignature("approve(address,uint256)", address(connector), type(uint256).max);
             vault.processor(targets, values, data);
         }
@@ -117,7 +123,7 @@ contract ConnectorTest is Setup {
             uint256[] memory values = new uint256[](1);
             bytes[] memory data = new bytes[](1);
             targets[0] = address(connector);
-            uint256 shares = strategy.balanceOf(address(vault));
+            uint256 shares = YEARN_V2_STRAT.balanceOf(address(vault));
             data[0] = abi.encodeWithSignature("withdraw(uint256,uint256,uint256)", shares, 0, 0);
             vault.processor(targets, values, data);
         }
