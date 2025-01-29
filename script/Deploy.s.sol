@@ -18,12 +18,18 @@ import "forge-std/Script.sol";
 
 contract Deploy is Script {
 
+    // YnSecurityCouncil
     address sec = 0xfcad670592a3b24869C0b51a6c6FDED4F95D6975;
 
+    // ERC-20: yn-ETH/LSD (yn-ETH/LSD)
     address curveStableswapPool = 0x1f59cC10c6360DA918B0235c98E58008452816EB;
 
     address public constant TIMELOCK_CONTROLLER = 0xbB73f8a5B0074b27c6df026c77fA08B0111D017A;
+
+    // Curve yn-ETH/LSD Factory yVault as YEARN_V2_STRAT 
     address public YEARN_V2_STRAT = 0x823976dA34aC45C23a8DfEa51B3Ff1Ae0D980213;
+
+    // ynETHx as VAULT
     address public VAULT = 0x657d9ABA1DBb59e53f9F3eCAA878447dCfC96dCb;
     address public constant YNETH = 0x09db87A538BD693E9d08544577d5cCfAA6373A48;
     address public constant YNLSDE = 0x35Ec69A77B79c255e5d47D5A3BdbEFEfE342630c;
