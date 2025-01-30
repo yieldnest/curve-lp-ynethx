@@ -23,7 +23,7 @@ contract Deploy is Script {
     // ERC-20: yn-ETH/LSD (yn-ETH/LSD)
     address curveStableswapPool = 0x1f59cC10c6360DA918B0235c98E58008452816EB;
 
-    address public constant TIMELOCK_CONTROLLER = 0xbB73f8a5B0074b27c6df026c77fA08B0111D017A;
+    address public TIMELOCK_CONTROLLER;
 
     // Curve yn-ETH/LSD Factory yVault as YEARN_V2_STRAT
     address public YEARN_V2_STRAT = 0x823976dA34aC45C23a8DfEa51B3Ff1Ae0D980213;
@@ -55,6 +55,16 @@ contract Deploy is Script {
     function run() external {
         vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
 
+        TimelockController timelock = _deployTimelockController(
+            1 days, // minDelay
+            sec,    // proposer1 
+            sec,    // proposer2
+            sec,    // executor1
+            sec,    // executor2
+            sec     // admin
+        );
+        TIMELOCK_CONTROLLER = address(timelock);
+
         StableswapOracle stableswapOracle = new StableswapOracle(address(curveStableswapPool));
         YvCurveLpOracle yvCurveLpOracle = new YvCurveLpOracle(address(YEARN_V2_STRAT), address(stableswapOracle));
         Connector connectorImpl =
@@ -66,6 +76,8 @@ contract Deploy is Script {
         connector.initialize(sec);
 
         vm.stopBroadcast();
+
+        console.log("TimelockController:", TIMELOCK_CONTROLLER);
 
         console.log("Connector:", address(connector));
         console.log("stableswapOracle:", address(stableswapOracle));
