@@ -13,4 +13,6 @@ remappings = [
     "@periphery/=lib/tokenized-strategy-periphery/src/",
 ]
 
+fs_permissions = [{ access = "write", path = "deployments/" }]
+
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

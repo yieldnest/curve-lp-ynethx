@@ -11,12 +11,14 @@ import {Connector} from "../src/Connector.sol";
 import {YvCurveLpOracle} from "../src/periphery/YvCurveLpOracle.sol";
 import {StableswapOracle} from "../src/periphery/StableswapOracle.sol";
 
+import {ProxyUtils} from "./utils/ProxyUtils.sol";
+
 import "forge-std/Script.sol";
 
 // ---- Usage ----
 // forge script script/Deploy.s.sol:Deploy --legacy --slow --rpc-url $RPC_URL --broadcast
 
-contract Deploy is Script {
+contract Deploy is Script, ProxyUtils {
     // YnSecurityCouncil
     address sec = 0xfcad670592a3b24869C0b51a6c6FDED4F95D6975;
 
@@ -78,9 +80,30 @@ contract Deploy is Script {
         vm.stopBroadcast();
 
         console.log("TimelockController:", TIMELOCK_CONTROLLER);
-
         console.log("Connector:", address(connector));
+        console.log("ProxyAdmin:", getProxyAdmin(address(connector)));
+        console.log("Implementation:", getImplementation(address(connector)));
+        console.log("connectorImpl:", address(connectorImpl));
+
+        console.log("----------------------------------------");
+
         console.log("stableswapOracle:", address(stableswapOracle));
         console.log("yvCurveLpOracle:", address(yvCurveLpOracle));
+     
+        string memory json = string.concat(
+            "{\n",
+            '  "admin": "', vm.toString(sec), '",\n',
+            '  "deployer": "', vm.toString(vm.addr(vm.envUint("DEPLOYER_PRIVATE_KEY"))), '",\n', 
+            '  "stableswapOracle": "', vm.toString(address(stableswapOracle)), '",\n',
+            '  "yvCurveLpOracle": "', vm.toString(address(yvCurveLpOracle)), '",\n',
+            '  "timelock": "', vm.toString(TIMELOCK_CONTROLLER), '",\n',
+            '  "connector-implementation": "', vm.toString(address(connectorImpl)), '",\n',
+            '  "connector-proxy": "', vm.toString(address(connector)), '",\n',
+            '  "connector-proxyAdmin": "', vm.toString(getProxyAdmin(address(connector))), '"\n',
+            "}\n"
+        );
+
+        string memory path = string.concat("deployments/connector-", vm.toString(block.chainid), ".json");
+        vm.writeFile(path, json);
     }
 }
