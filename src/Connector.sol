@@ -66,9 +66,17 @@ contract Connector is AccessControlUpgradeable {
     /// @dev We assume the oracle is working as expected. Rate/liveness checks should be done in the vault
     /// @return rate The latest rate from the oracle
     /// @return updatedAt The timestamp of the last update
-    function rate() external view returns (int256, uint256) {
+    function rate() public view returns (int256, uint256) {
         (, int256 _rate, uint256 _updatedAt,,) = ORACLE.latestRoundData();
         return (_rate, _updatedAt);
+    }
+
+    /// @notice Get the latest rate of the Strategy share token without timestamp
+    /// @dev We assume the oracle is working as expected. Rate/liveness checks should be done in the vault
+    /// @return The latest rate from the oracle
+    function getRate() external view returns (int256) {
+        (int256 _rate,) = rate();
+        return _rate;
     }
 
     /// @notice Deposit assets into the Strategy
